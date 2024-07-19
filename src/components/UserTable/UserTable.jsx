@@ -1,4 +1,4 @@
-import { Pagination, Table } from 'antd';
+import { Button, Input, Pagination, Space, Table } from 'antd';
 import styles from './styles.module.scss';
 import { useEffect, useState } from 'react';
 import apiData from '../../api/apiData';
@@ -7,35 +7,49 @@ const UserTable = () => {
     const [users, setUsers] = useState([]);
     const [loading, setIsLoading] = useState(false);
     const [sortedInfo, setSortedInfo] = useState({});
+    const [searchData, setSearchData] = useState('');
+    const [filteredData, setFilteredData] = useState([]);
+
+    const fetchData = async () => {
+        try {
+            const res = await apiData();
+            // console.log(res.users);
+            setIsLoading(false);
+            const modUsers = res.users.map((item) => ({
+                ...item,
+                key: item.id,
+                name: `${item.firstName} ${item.maidenName || ''} ${item.lastName}`,
+                address: `${item.address.city}, ${item.address.address}`,
+            }));
+            setUsers(modUsers);
+            setFilteredData(modUsers);
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     useEffect(() => {
         setIsLoading(true);
-        const fetchData = async () => {
-            try {
-                const res = await apiData();
-                // console.log(res.users);
-                setIsLoading(false);
-
-                setUsers(res.users);
-            } catch (error) {
-                console.log(error);
-            }
-        };
         fetchData();
     }, []);
 
-    const handleChange = (...sorter) => {
-        const {order, field} = sorter[2];
-        setSortedInfo({columnKey: field, order });
+    const handleChange = (pagination, filters, sorter) => {
+        const { order, field } = sorter;
+        setSortedInfo({ columnKey: field, order });
     };
 
-    const modData = users.map(({ body, ...item }) => ({
-        ...item,
-        key: item.id,
-        info: body,
-        name: `${item.firstName} ${item.maidenName} ${item.lastName}`,
-        address: `${item.address.city}, ${item.address.address}`,
-    }));
+    const clearAll = () => {
+        setSortedInfo({});
+        setSearchData('');
+        fetchData();
+    };
+
+    // const modData = users.map((item) => ({
+    //     ...item,
+    //     key: item.id,
+    //     name: `${item.firstName} ${item.maidenName || ''} ${item.lastName}`,
+    //     address: `${item.address.city}, ${item.address.address}`,
+    // }));
 
     const columns = [
         {
@@ -75,11 +89,49 @@ const UserTable = () => {
         },
     ];
 
+    const handleSearch = (e) => {
+        setSearchData(e.target.value);
+        if (e.target.value === '') {
+            setFilteredData(users);
+        }
+    };
+    const globalSearch = () => {
+        const searchLower = searchData.toLowerCase();
+        const filtered = users.filter((value) => {
+            const fullName =
+                `${value.firstName || ''} ${value.maidenName || ''} ${value.lastName || ''}`.toLowerCase();
+            const address = value.address.toLowerCase();
+
+            return (
+                fullName.includes(searchData.toLowerCase()) ||
+                (value.age && value.age.toString().includes(searchData)) ||
+                (value.gender && value.gender.toLowerCase().includes(searchData.toLowerCase())) ||
+                (value.phone && value.phone.toLowerCase().includes(searchData.toLowerCase())) ||
+                address.includes(searchLower)
+            );
+        });
+        setFilteredData(filtered);
+    };
+
     return (
         <>
+            <Space style={{ marginBottom: 16 }}>
+                <Input
+                    placeholder='Введите данные...'
+                    onChange={handleSearch}
+                    type='text'
+                    allowClear
+                    value={searchData}
+                    className={styles.input}
+                />
+                <Button type='primary' onClick={globalSearch}>
+                    Search
+                </Button>
+                <Button onClick={clearAll} className={styles.clearBtn}>Clear All</Button>
+            </Space>
             <Table
                 columns={columns}
-                dataSource={modData}
+                dataSource={filteredData.length ? filteredData : users}
                 bordered
                 loading={loading}
                 className={styles.table}
