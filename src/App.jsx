@@ -7,7 +7,7 @@ function App() {
     return (
         <>
             <div className='container'>
-                <h1 className='title'>User table App</h1>
+                <h1 className='title'>User table App 📒</h1>
                 <UserTable />
             </div>
         </>
