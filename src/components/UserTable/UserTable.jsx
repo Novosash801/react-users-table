@@ -74,17 +74,24 @@ const UserTable = () => {
     }, []);
 
     useEffect(() => {
+        const getSortTooltipText = (columnKey) => {
+            if (sortedInfo.columnKey === columnKey) {
+                if (sortedInfo.order === 'ascend') return ' (по возрастанию)';
+                if (sortedInfo.order === 'descend') return ' (по убыванию)';
+            }
+            return '';
+        };
 
         setColumns([
             {
-                title: 'ID',
+                title: () => <span>ID {getSortTooltipText('id')}</span>,
                 dataIndex: 'id',
                 sorter: (a, b) => a.id - b.id,
                 sortOrder: sortedInfo.columnKey === 'id' && sortedInfo.order,
                 width: 50,
             },
             {
-                title: 'ФИО',
+                title: () => <span>ФИО {getSortTooltipText('name')}</span>,
                 dataIndex: 'name',
                 sorter: (a, b) => a.name.localeCompare(b.name, 'en-US'),
                 sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
@@ -93,7 +100,7 @@ const UserTable = () => {
                 ellipsis: true,
             },
             {
-                title: 'Возраст',
+                title: () => <span>Возраст {getSortTooltipText('age')}</span>,
                 dataIndex: 'age',
                 sorter: (a, b) => a.age - b.age,
                 sortOrder: sortedInfo.columnKey === 'age' && sortedInfo.order,
@@ -108,9 +115,15 @@ const UserTable = () => {
                 align: 'center',
                 width: 100,
             },
-            { title: 'Телефон', dataIndex: 'phone', align: 'center', width: 150, ellipsis: true },
             {
-                title: 'Адрес',
+                title: 'Номер',
+                dataIndex: 'phone',
+                align: 'center',
+                width: 150,
+                ellipsis: true,
+            },
+            {
+                title: () => <span>Адрес {getSortTooltipText('address')}</span>,
                 dataIndex: 'address',
                 sorter: (a, b) => a.address.localeCompare(b.address),
                 sortOrder: sortedInfo.columnKey === 'address' && sortedInfo.order,
@@ -241,6 +254,7 @@ const UserTable = () => {
                 onRow={(record) => ({
                     onClick: () => showModal(record),
                 })}
+                showSorterTooltip={false}
             />
             <Modal
                 title='Подробная информация о пользователе'
