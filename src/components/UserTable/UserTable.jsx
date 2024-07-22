@@ -2,7 +2,7 @@ import { Button, Input, Space, Table, message } from 'antd';
 import { Resizable } from 'react-resizable';
 import styles from './styles.module.scss';
 import { useEffect, useState } from 'react';
-import apiData from '../../api/apiData';// Импорт стилей для react-resizable
+import apiData from '../../api/apiData'; // Импорт стилей для react-resizable
 
 const ResizableTitle = (props) => {
     const { onResize, width, ...restProps } = props;
@@ -121,11 +121,21 @@ const UserTable = () => {
         (index) =>
         (e, { size }) => {
             const newColumns = [...columns];
-            newColumns[index] = {
-                ...newColumns[index],
-                width: Math.max(size.width, 50), // Минимальная ширина 50px
-            };
-            setColumns(newColumns);
+            const newWidth = Math.max(size.width, 50); // Минимальная ширина 50px
+
+            // Суммарная ширина всех столбцов
+            const totalWidth = newColumns.reduce((sum, col, colIndex) => {
+                return sum + (colIndex === index ? newWidth : col.width || 0);
+            }, 0);
+
+            if (totalWidth <= 1200) {
+                // Максимальная ширина таблицы 1200px
+                newColumns[index] = {
+                    ...newColumns[index],
+                    width: newWidth,
+                };
+                setColumns(newColumns);
+            }
         };
 
     const handleChange = (pagination, filters, sorter) => {
