@@ -1,13 +1,29 @@
 import { Button, Input, Pagination, Space, Table } from 'antd';
 import styles from './styles.module.scss';
+import { Resizable } from 'react-resizable';
 import { useEffect, useState } from 'react';
 import apiData from '../../api/apiData';
+
+// const ResizableTitle = (props) => {
+//     const { onResize, width, ...restProps } = props;
+//     return (
+//         <Resizable
+//             width={width}
+//             height={0}
+//             onResize={onResize}
+//             minConstraints={[50, 0]} // Минимальная ширина 50px
+//         >
+//             <th {...restProps} style={{ ...restProps.style, overflow: 'hidden' }} />
+//         </Resizable>
+//     );
+// };
 
 const UserTable = () => {
     const [users, setUsers] = useState([]);
     const [loading, setIsLoading] = useState(false);
     const [sortedInfo, setSortedInfo] = useState({});
     const [searchData, setSearchData] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
     const [filteredData, setFilteredData] = useState([]);
 
     const fetchData = async () => {
@@ -33,6 +49,7 @@ const UserTable = () => {
         fetchData();
     }, []);
 
+   
     const handleChange = (pagination, filters, sorter) => {
         const { order, field } = sorter;
         setSortedInfo({ columnKey: field, order });
@@ -41,6 +58,7 @@ const UserTable = () => {
     const clearAll = () => {
         setSortedInfo({});
         setSearchData('');
+        setCurrentPage(1);
         fetchData();
     };
 
@@ -64,6 +82,7 @@ const UserTable = () => {
             sorter: (a, b) => a.name.localeCompare(b.name, 'en-US'),
             sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
             align: 'center',
+            width: 200, // Начальная ширина, которую можно изменить
         },
         {
             title: 'Age',
@@ -127,7 +146,9 @@ const UserTable = () => {
                 <Button type='primary' onClick={globalSearch}>
                     Search
                 </Button>
-                <Button onClick={clearAll} className={styles.clearBtn}>Clear All</Button>
+                <Button onClick={clearAll} className={styles.clearBtn}>
+                    Clear All
+                </Button>
             </Space>
             <Table
                 columns={columns}
@@ -136,6 +157,13 @@ const UserTable = () => {
                 loading={loading}
                 className={styles.table}
                 onChange={handleChange}
+                pagination={{
+                    current: currentPage,
+                    onChange: (page, pageSize) => {
+                        setCurrentPage(page);
+                    },
+
+                }}
             />
         </>
     );
