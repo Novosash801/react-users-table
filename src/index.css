@@ -5,13 +5,23 @@
     padding: 0;
     box-sizing: border-box;
     text-decoration: none;
-    font-family: "Inter", sans-serif;
+    font-family: 'Comfortaa', sans-serif;
+    
+}
+
+html {
+    background: radial-gradient(circle, rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);
 }
 
 .container {
     max-width: 1200px;
     padding: 24px;
     margin: 0 auto;
+  
+}
+
+.title {
+    text-align: center;
 }
 
 .react-resizable-handle {
@@ -24,5 +34,4 @@
     bottom: 0;
     right: 0;
     cursor: se-resize;
-
 }

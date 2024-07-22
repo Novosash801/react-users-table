@@ -1,4 +1,4 @@
-import { Button, Input, Space, Table, message } from 'antd';
+import { Button, Input, Space, Table, message, Modal, Tooltip } from 'antd';
 import { Resizable } from 'react-resizable';
 import styles from './styles.module.scss';
 import { useEffect, useState } from 'react';
@@ -39,6 +39,9 @@ const UserTable = () => {
     const [filteredData, setFilteredData] = useState([]);
     const [columns, setColumns] = useState([]);
 
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+
     const fetchData = async () => {
         try {
             setIsLoading(true);
@@ -71,16 +74,17 @@ const UserTable = () => {
     }, []);
 
     useEffect(() => {
+
         setColumns([
             {
                 title: 'ID',
                 dataIndex: 'id',
                 sorter: (a, b) => a.id - b.id,
                 sortOrder: sortedInfo.columnKey === 'id' && sortedInfo.order,
-                width: 100,
+                width: 50,
             },
             {
-                title: 'Name',
+                title: 'ФИО',
                 dataIndex: 'name',
                 sorter: (a, b) => a.name.localeCompare(b.name, 'en-US'),
                 sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
@@ -89,7 +93,7 @@ const UserTable = () => {
                 ellipsis: true,
             },
             {
-                title: 'Age',
+                title: 'Возраст',
                 dataIndex: 'age',
                 sorter: (a, b) => a.age - b.age,
                 sortOrder: sortedInfo.columnKey === 'age' && sortedInfo.order,
@@ -97,16 +101,16 @@ const UserTable = () => {
                 width: 100,
             },
             {
-                title: 'Gender',
+                title: 'Пол',
                 dataIndex: 'gender',
                 sorter: (a, b) => a.gender.localeCompare(b.gender),
                 sortOrder: sortedInfo.columnKey === 'gender' && sortedInfo.order,
                 align: 'center',
                 width: 100,
             },
-            { title: 'Number', dataIndex: 'phone', align: 'center', width: 150, ellipsis: true },
+            { title: 'Телефон', dataIndex: 'phone', align: 'center', width: 150, ellipsis: true },
             {
-                title: 'Address',
+                title: 'Адрес',
                 dataIndex: 'address',
                 sorter: (a, b) => a.address.localeCompare(b.address),
                 sortOrder: sortedInfo.columnKey === 'address' && sortedInfo.order,
@@ -175,6 +179,19 @@ const UserTable = () => {
         setFilteredData(filtered);
     };
 
+    const showModal = (record) => {
+        setSelectedUser(record);
+        setIsModalOpen(true);
+    };
+
+    const handleOk = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
+
     const components = {
         header: {
             cell: ResizableTitle,
@@ -193,10 +210,10 @@ const UserTable = () => {
                     className={styles.input}
                 />
                 <Button type='primary' onClick={globalSearch}>
-                    Search
+                    Поиск
                 </Button>
                 <Button onClick={clearAll} className={styles.clearBtn}>
-                    Clear All
+                    Сброс
                 </Button>
             </Space>
             <Table
@@ -212,6 +229,7 @@ const UserTable = () => {
                 bordered
                 loading={loading}
                 className={styles.table}
+                style={{ cursor: 'pointer' }}
                 onChange={handleChange}
                 pagination={{
                     current: currentPage,
@@ -219,7 +237,42 @@ const UserTable = () => {
                         setCurrentPage(page);
                     },
                 }}
+                scroll={{ x: true }}
+                onRow={(record) => ({
+                    onClick: () => showModal(record),
+                })}
             />
+            <Modal
+                title='Подробная информация о пользователе'
+                open={isModalOpen}
+                onOk={handleOk}
+                onCancel={handleCancel}>
+                {selectedUser && (
+                    <div>
+                        <p>
+                            <strong>ФИО:</strong> {selectedUser.name}
+                        </p>
+                        <p>
+                            <strong>Возраст:</strong> {selectedUser.age}
+                        </p>
+                        <p>
+                            <strong>Адрес:</strong> {selectedUser.address}
+                        </p>
+                        <p>
+                            <strong>Рост:</strong> {selectedUser.height} см
+                        </p>
+                        <p>
+                            <strong>Вес:</strong> {selectedUser.weight} кг
+                        </p>
+                        <p>
+                            <strong>Номер телефона:</strong> {selectedUser.phone}
+                        </p>
+                        <p>
+                            <strong>Email:</strong> {selectedUser.email}
+                        </p>
+                    </div>
+                )}
+            </Modal>
         </>
     );
 };
