@@ -1,4 +1,4 @@
-import { Button, Input, Space, Table } from 'antd';
+import { Button, Input, Space, Table, message } from 'antd';
 import { Resizable } from 'react-resizable';
 import styles from './styles.module.scss';
 import { useEffect, useState } from 'react';
@@ -41,8 +41,16 @@ const UserTable = () => {
 
     const fetchData = async () => {
         try {
+            setIsLoading(true);
             const res = await apiData();
             setIsLoading(false);
+
+            if (res.error) {
+                // Обработка ошибки
+                message.error(`Ошибка: ${res.error}`);
+                return;
+            }
+
             const modUsers = res.users.map((item) => ({
                 ...item,
                 key: item.id,
@@ -52,7 +60,8 @@ const UserTable = () => {
             setUsers(modUsers);
             setFilteredData(modUsers);
         } catch (error) {
-            console.log(error);
+            setIsLoading(false);
+            console.error('Ошибка при обработке данных:', error);
         }
     };
 
