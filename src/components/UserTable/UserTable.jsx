@@ -1,22 +1,34 @@
-import { Button, Input, Pagination, Space, Table } from 'antd';
-import styles from './styles.module.scss';
+import { Button, Input, Space, Table } from 'antd';
 import { Resizable } from 'react-resizable';
+import styles from './styles.module.scss';
 import { useEffect, useState } from 'react';
-import apiData from '../../api/apiData';
+import apiData from '../../api/apiData';// Импорт стилей для react-resizable
 
-// const ResizableTitle = (props) => {
-//     const { onResize, width, ...restProps } = props;
-//     return (
-//         <Resizable
-//             width={width}
-//             height={0}
-//             onResize={onResize}
-//             minConstraints={[50, 0]} // Минимальная ширина 50px
-//         >
-//             <th {...restProps} style={{ ...restProps.style, overflow: 'hidden' }} />
-//         </Resizable>
-//     );
-// };
+const ResizableTitle = (props) => {
+    const { onResize, width, ...restProps } = props;
+
+    if (!width) {
+        return <th {...restProps} />;
+    }
+
+    return (
+        <Resizable
+            width={width}
+            height={0}
+            handle={
+                <span
+                    className='react-resizable-handle'
+                    onClick={(e) => {
+                        e.stopPropagation();
+                    }}
+                />
+            }
+            onResize={onResize}
+            draggableOpts={{ enableUserSelectHack: false }}>
+            <th {...restProps} />
+        </Resizable>
+    );
+};
 
 const UserTable = () => {
     const [users, setUsers] = useState([]);
@@ -25,11 +37,11 @@ const UserTable = () => {
     const [searchData, setSearchData] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [filteredData, setFilteredData] = useState([]);
+    const [columns, setColumns] = useState([]);
 
     const fetchData = async () => {
         try {
             const res = await apiData();
-            // console.log(res.users);
             setIsLoading(false);
             const modUsers = res.users.map((item) => ({
                 ...item,
@@ -49,7 +61,64 @@ const UserTable = () => {
         fetchData();
     }, []);
 
-   
+    useEffect(() => {
+        setColumns([
+            {
+                title: 'ID',
+                dataIndex: 'id',
+                sorter: (a, b) => a.id - b.id,
+                sortOrder: sortedInfo.columnKey === 'id' && sortedInfo.order,
+                width: 100,
+            },
+            {
+                title: 'Name',
+                dataIndex: 'name',
+                sorter: (a, b) => a.name.localeCompare(b.name, 'en-US'),
+                sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
+                align: 'center',
+                width: 200,
+                ellipsis: true,
+            },
+            {
+                title: 'Age',
+                dataIndex: 'age',
+                sorter: (a, b) => a.age - b.age,
+                sortOrder: sortedInfo.columnKey === 'age' && sortedInfo.order,
+                align: 'center',
+                width: 100,
+            },
+            {
+                title: 'Gender',
+                dataIndex: 'gender',
+                sorter: (a, b) => a.gender.localeCompare(b.gender),
+                sortOrder: sortedInfo.columnKey === 'gender' && sortedInfo.order,
+                align: 'center',
+                width: 100,
+            },
+            { title: 'Number', dataIndex: 'phone', align: 'center', width: 150, ellipsis: true },
+            {
+                title: 'Address',
+                dataIndex: 'address',
+                sorter: (a, b) => a.address.localeCompare(b.address),
+                sortOrder: sortedInfo.columnKey === 'address' && sortedInfo.order,
+                align: 'center',
+                width: 250,
+                ellipsis: true,
+            },
+        ]);
+    }, [sortedInfo]);
+
+    const handleResize =
+        (index) =>
+        (e, { size }) => {
+            const newColumns = [...columns];
+            newColumns[index] = {
+                ...newColumns[index],
+                width: Math.max(size.width, 50), // Минимальная ширина 50px
+            };
+            setColumns(newColumns);
+        };
+
     const handleChange = (pagination, filters, sorter) => {
         const { order, field } = sorter;
         setSortedInfo({ columnKey: field, order });
@@ -62,58 +131,13 @@ const UserTable = () => {
         fetchData();
     };
 
-    // const modData = users.map((item) => ({
-    //     ...item,
-    //     key: item.id,
-    //     name: `${item.firstName} ${item.maidenName || ''} ${item.lastName}`,
-    //     address: `${item.address.city}, ${item.address.address}`,
-    // }));
-
-    const columns = [
-        {
-            title: 'ID',
-            dataIndex: 'id',
-            sorter: (a, b) => a.id - b.id,
-            sortOrder: sortedInfo.columnKey === 'id' && sortedInfo.order,
-        },
-        {
-            title: 'Name',
-            dataIndex: 'name',
-            sorter: (a, b) => a.name.localeCompare(b.name, 'en-US'),
-            sortOrder: sortedInfo.columnKey === 'name' && sortedInfo.order,
-            align: 'center',
-            width: 200, // Начальная ширина, которую можно изменить
-        },
-        {
-            title: 'Age',
-            dataIndex: 'age',
-            sorter: (a, b) => a.age - b.age,
-            sortOrder: sortedInfo.columnKey === 'age' && sortedInfo.order,
-            align: 'center',
-        },
-        {
-            title: 'Gender',
-            dataIndex: 'gender',
-            sorter: (a, b) => a.gender.localeCompare(b.gender),
-            sortOrder: sortedInfo.columnKey === 'gender' && sortedInfo.order,
-            align: 'center',
-        },
-        { title: 'Number', dataIndex: 'phone', align: 'center' },
-        {
-            title: 'Address',
-            dataIndex: 'address',
-            sorter: (a, b) => a.address.localeCompare(b.address),
-            sortOrder: sortedInfo.columnKey === 'address' && sortedInfo.order,
-            align: 'center',
-        },
-    ];
-
     const handleSearch = (e) => {
         setSearchData(e.target.value);
         if (e.target.value === '') {
             setFilteredData(users);
         }
     };
+
     const globalSearch = () => {
         const searchLower = searchData.toLowerCase();
         const filtered = users.filter((value) => {
@@ -130,6 +154,12 @@ const UserTable = () => {
             );
         });
         setFilteredData(filtered);
+    };
+
+    const components = {
+        header: {
+            cell: ResizableTitle,
+        },
     };
 
     return (
@@ -151,7 +181,14 @@ const UserTable = () => {
                 </Button>
             </Space>
             <Table
-                columns={columns}
+                components={components}
+                columns={columns.map((col, index) => ({
+                    ...col,
+                    onHeaderCell: (column) => ({
+                        width: column.width,
+                        onResize: handleResize(index),
+                    }),
+                }))}
                 dataSource={filteredData.length ? filteredData : users}
                 bordered
                 loading={loading}
@@ -162,7 +199,6 @@ const UserTable = () => {
                     onChange: (page, pageSize) => {
                         setCurrentPage(page);
                     },
-
                 }}
             />
         </>
