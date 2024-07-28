@@ -32,7 +32,7 @@ const ResizableTitle = (props) => {
 
 const UserTable = () => {
     const [users, setUsers] = useState([]);
-    const [loading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [sortedInfo, setSortedInfo] = useState({});
     const [searchData, setSearchData] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -44,17 +44,17 @@ const UserTable = () => {
 
     const fetchData = async () => {
         try {
-            setIsLoading(true);
-            const res = await apiData();
-            setIsLoading(false);
+            setLoading(true);
+            const response = await fetch('https://dummyjson.com/users');
+            const result = await response.json();
+            setLoading(false);
 
-            if (res.error) {
-                // Обработка ошибки
-                message.error(`Ошибка: ${res.error}`);
+            if (result.error) {
+                message.error(`Ошибка: ${result.error}`);
                 return;
             }
 
-            const modUsers = res.users.map((item) => ({
+            const modUsers = result.users.map((item) => ({
                 ...item,
                 key: item.id,
                 name: `${item.firstName} ${item.maidenName || ''} ${item.lastName}`,
@@ -63,13 +63,13 @@ const UserTable = () => {
             setUsers(modUsers);
             setFilteredData(modUsers);
         } catch (error) {
-            setIsLoading(false);
+            setLoading(false);
             console.error('Ошибка при обработке данных:', error);
         }
     };
 
     useEffect(() => {
-        setIsLoading(true);
+        setLoading(true);
         fetchData();
     }, []);
 
@@ -138,15 +138,13 @@ const UserTable = () => {
         (index) =>
         (e, { size }) => {
             const newColumns = [...columns];
-            const newWidth = Math.max(size.width, 50); // Минимальная ширина 50px
+            const newWidth = Math.max(size.width, 50);
 
-            // Суммарная ширина всех столбцов
             const totalWidth = newColumns.reduce((sum, col, colIndex) => {
                 return sum + (colIndex === index ? newWidth : col.width || 0);
             }, 0);
 
             if (totalWidth <= 1200) {
-                // Максимальная ширина таблицы 1200px
                 newColumns[index] = {
                     ...newColumns[index],
                     width: newWidth,
@@ -164,31 +162,21 @@ const UserTable = () => {
         setSortedInfo({});
         setSearchData('');
         setCurrentPage(1);
-        fetchData();
+        setFilteredData(users);
     };
 
-    const handleSearch = (e) => {
-        setSearchData(e.target.value);
-        if (e.target.value === '') {
+    const handleSearch = async (e) => {
+        const query = e.target.value.toLowerCase();
+        setSearchData(query);
+
+        if (query === '') {
             setFilteredData(users);
+            return;
         }
-    };
 
-    const globalSearch = () => {
-        const searchLower = searchData.toLowerCase();
-        const filtered = users.filter((value) => {
-            const fullName =
-                `${value.firstName || ''} ${value.maidenName || ''} ${value.lastName || ''}`.toLowerCase();
-            const address = value.address.toLowerCase();
-
-            return (
-                fullName.includes(searchData.toLowerCase()) ||
-                (value.age && value.age.toString().includes(searchData)) ||
-                (value.gender && value.gender.toLowerCase().includes(searchData.toLowerCase())) ||
-                (value.phone && value.phone.toLowerCase().includes(searchData.toLowerCase())) ||
-                address.includes(searchLower)
-            );
-        });
+        const filtered = users.filter((item) =>
+            Object.keys(item).some((key) => String(item[key]).toLowerCase().includes(query)),
+        );
         setFilteredData(filtered);
     };
 
@@ -222,9 +210,6 @@ const UserTable = () => {
                     value={searchData}
                     className={styles.input}
                 />
-                <Button type='primary' onClick={globalSearch}>
-                    Поиск
-                </Button>
                 <Button onClick={clearAll} className={styles.clearBtn}>
                     Сброс
                 </Button>
