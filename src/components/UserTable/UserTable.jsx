@@ -1,9 +1,9 @@
-import { Button, Input, Space, Table, message, Modal, Tooltip } from 'antd';
+import { Button, Input, Space, Table, message, Modal } from 'antd';
 import { Resizable } from 'react-resizable';
-import styles from './styles.module.scss';
 import { useEffect, useState } from 'react';
-import apiData from '../../api/apiData'; // Импорт стилей для react-resizable
+import styles from './styles.module.scss'; // Импорт стилей для react-resizable
 
+// Компонент для создания ресайзабельного заголовка таблицы
 const ResizableTitle = (props) => {
     const { onResize, width, ...restProps } = props;
 
@@ -31,6 +31,7 @@ const ResizableTitle = (props) => {
 };
 
 const UserTable = () => {
+    // Состояние для пользователей, загрузки, сортировки, поиска и пагинации
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [sortedInfo, setSortedInfo] = useState({});
@@ -39,9 +40,11 @@ const UserTable = () => {
     const [filteredData, setFilteredData] = useState([]);
     const [columns, setColumns] = useState([]);
 
+    // Состояние для модального окна с информацией о выбранном пользователе
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
 
+    // Функция для загрузки данных пользователей из API
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -54,6 +57,7 @@ const UserTable = () => {
                 return;
             }
 
+            // Модификация данных пользователей для удобства отображения
             const modUsers = result.users.map((item) => ({
                 ...item,
                 key: item.id,
@@ -68,11 +72,13 @@ const UserTable = () => {
         }
     };
 
+    // Эффект для загрузки данных при монтировании компонента
     useEffect(() => {
         setLoading(true);
         fetchData();
     }, []);
 
+    // Эффект для настройки колонок таблицы и сортировок
     useEffect(() => {
         const getSortTooltipText = (columnKey) => {
             if (sortedInfo.columnKey === columnKey) {
@@ -134,6 +140,7 @@ const UserTable = () => {
         ]);
     }, [sortedInfo]);
 
+    // Обработчик изменения размера колонок
     const handleResize =
         (index) =>
         (e, { size }) => {
@@ -153,11 +160,13 @@ const UserTable = () => {
             }
         };
 
+    // Обработчик изменения сортировки таблицы
     const handleChange = (pagination, filters, sorter) => {
         const { order, field } = sorter;
         setSortedInfo({ columnKey: field, order });
     };
 
+    // Функция для очистки всех фильтров и сортировок
     const clearAll = () => {
         setSortedInfo({});
         setSearchData('');
@@ -165,7 +174,8 @@ const UserTable = () => {
         setFilteredData(users);
     };
 
-    const handleSearch = async (e) => {
+    // Обработчик поиска по таблице
+    const handleSearch = (e) => {
         const query = e.target.value.toLowerCase();
         setSearchData(query);
 
@@ -174,12 +184,14 @@ const UserTable = () => {
             return;
         }
 
+        // Фильтрация данных по всем колонкам
         const filtered = users.filter((item) =>
             Object.keys(item).some((key) => String(item[key]).toLowerCase().includes(query)),
         );
         setFilteredData(filtered);
     };
 
+    // Функции для отображения модального окна с информацией о пользователе
     const showModal = (record) => {
         setSelectedUser(record);
         setIsModalOpen(true);
