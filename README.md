@@ -1,6 +1,6 @@
 # Таблица с пользователями для для отображения клиентов
 
-Тестовое задание для <img src="./public/images/academy-logo.png" weight="50" height="50"/>&nbsp;<br/>
+Тестовое задание для <img src="./public/images/infotecs.svg" weight="50" height="50"/>&nbsp;<br/>
 
 ## Стек
 
