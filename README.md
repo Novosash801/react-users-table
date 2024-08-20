@@ -1,7 +1,5 @@
 # Таблица с пользователями
 
-Тестовое задание для <img src="./public/images/infotecs.svg" weight="50" height="50"/>&nbsp;<br/>
-
 ## Стек
 
 ![image](./public/images/javascript-plain.svg)
